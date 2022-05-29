@@ -185,7 +185,7 @@ public abstract class MyKeyboardAbstract extends LinearLayout implements View.On
                 return false;
             }
 
-            Runnable mAction = new Runnable() {
+             Runnable mAction = new Runnable() {
                 @Override
                 public void run() {
                     delete();

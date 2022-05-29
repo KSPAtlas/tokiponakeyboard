@@ -40,6 +40,10 @@
             app:key="emoji_mode"
             app:title="Enable sitelen Emoji mode" />
 
+        <SwitchPreferenceCompat
+            app:key="telo_mode"
+            app:title="Enable sitelen Telo mode" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

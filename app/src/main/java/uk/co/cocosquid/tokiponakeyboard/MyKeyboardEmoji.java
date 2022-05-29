@@ -287,7 +287,7 @@ public class MyKeyboardEmoji extends MyKeyboardAbstract {
 
                         // Switch subtype
                         finishAction("finish");
-                        inputMethodService.setEmojiMode(false);
+                        inputMethodService.setTeloMode(true);
 
                     } else {
                         action(startKey, null);

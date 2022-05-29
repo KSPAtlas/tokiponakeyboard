@@ -14,18 +14,23 @@ import androidx.preference.PreferenceManager;
 public class TokiPonaIME extends InputMethodService {
 
     private boolean emojiMode;
+    private boolean teloMode;
     private MyKeyboard keyboard;
     private MyKeyboardEmoji keyboardEmoji;
+    private MyKeyboardTelo keyboardTelo;
 
     @SuppressLint("InflateParams")
     @Override
     public View onCreateInputView() {
         updatePreferences();
 
+        keyboardTelo = getLayoutInflater().inflate(R.layout.keyboard_wrapper_telo, null).findViewById(R.id.keyboard_telo);
         keyboardEmoji = getLayoutInflater().inflate(R.layout.keyboard_wrapper_emoji, null).findViewById(R.id.keyboard_emoji);
         keyboard = getLayoutInflater().inflate(R.layout.keyboard_wrapper, null).findViewById(R.id.keyboard);
 
-        if (emojiMode) {
+        if (teloMode) {
+            return keyboardTelo;
+        } else if (emojiMode) {
             return keyboardEmoji;
         }
         return keyboard;
@@ -39,6 +44,13 @@ public class TokiPonaIME extends InputMethodService {
         InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(INPUT_METHOD_SERVICE);
 
         updatePreferences();
+
+        keyboardTelo.setIMS(this);
+        keyboardTelo.loadPreferences();
+        keyboardTelo.setEditorInfo(info);
+        keyboardTelo.setInputConnection(ic);
+        keyboardTelo.setIMM(imm);
+        keyboardTelo.updateCurrentState();
 
         keyboardEmoji.setIMS(this);
         keyboardEmoji.loadPreferences();
@@ -57,7 +69,9 @@ public class TokiPonaIME extends InputMethodService {
 
     @Override
     public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd) {
-        if (emojiMode) {
+        if (teloMode) {
+            keyboardTelo.updateCurrentState();
+        } else if (emojiMode) {
             keyboardEmoji.updateCurrentState();
         } else {
             keyboard.updateCurrentState();
@@ -68,8 +82,21 @@ public class TokiPonaIME extends InputMethodService {
     public void onWindowHidden() {
         super.onWindowHidden();
 
+        keyboardTelo.finishAction("finish");
         keyboardEmoji.finishAction("finish");
         keyboard.finishAction("finish");
+    }
+
+    public void setTeloMode(boolean newTeloMode) {
+        if (newTeloMode) {
+            teloMode = true;
+            setInputView(keyboardTelo);
+            keyboardTelo.updateCurrentState();
+        } else {
+            teloMode = false;
+            setInputView(keyboard);
+            keyboard.updateCurrentState();
+        }
     }
 
     public void setEmojiMode(boolean newEmojiMode) {
@@ -87,10 +114,13 @@ public class TokiPonaIME extends InputMethodService {
     private void updatePreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         //boolean previousEmojiMode = emojiMode;
+        teloMode = sharedPreferences.getBoolean("telo_mode", false);
         emojiMode = sharedPreferences.getBoolean("emoji_mode", false);
 
         if (keyboard != null) {
-            if (emojiMode) {
+            if (teloMode) {
+                setInputView(keyboardTelo);
+            } else if (emojiMode) {
                 setInputView(keyboardEmoji);
             } else {
                 setInputView(keyboard);
